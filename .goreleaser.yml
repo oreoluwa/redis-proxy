@@ -1,0 +1,89 @@
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     https:#www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+project_name: redis-proxy
+
+env:
+  - CGO_ENABLED=0
+
+# Build for macOS, Linux, and Windows.
+# Skip 32 bit macOS builds.
+builds:
+  - id: redis-proxy
+    main: ./cmd/redis-proxy/main.go
+    goos:
+      - darwin
+      - windows
+      - linux
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+    flags:
+      - -mod=readonly
+
+  - id: switch-test
+    main: ./cmd/switch-test/main.go
+    goos:
+      - darwin
+      - windows
+      - linux
+    goarch:
+      - 386
+      - amd64
+      - arm
+      - arm64
+    goarm:
+      - 6
+      - 7
+    ignore:
+      - goos: darwin
+        goarch: 386
+    skip: true
+    flags:
+      - -mod=readonly
+
+archives:
+  -
+    replacements:
+      darwin: macos
+      386: i386
+      amd64: x86_64
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ .Tag }}-next"
+
+release:
+  # This prevents auto-publishing the release. You need to manually publish it.
+  draft: true
+  # Marks the release as not ready for production in case there's a tag indicator (e.g. -rc1)
+  prerelease: auto
+  github:
+    owner: oreoluwa
+    name: redis-proxy
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+    - '^docs:'
+    - '^test:'
